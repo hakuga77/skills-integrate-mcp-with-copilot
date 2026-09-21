@@ -8,6 +8,7 @@
   </head>
   <body>
     <header>
+      <button id="login-button" class="login-button" type="button">Teacher login</button>
       <h1>Mergington High School</h1>
       <h2>Extracurricular Activities</h2>
     </header>
@@ -22,7 +23,8 @@
       </section>
 
       <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
+        <h3>Teacher registration</h3>
+        <p id="auth-status" class="auth-status">Log in to register or unregister students.</p>
         <form id="signup-form">
           <div class="form-group">
             <label for="email">Student Email:</label>
@@ -35,11 +37,27 @@
               <!-- Activity options will be loaded here -->
             </select>
           </div>
-          <button type="submit">Sign Up</button>
+          <button type="submit">Register student</button>
         </form>
+        <button id="logout-button" class="secondary-button hidden" type="button">Log out</button>
         <div id="message" class="hidden"></div>
       </section>
     </main>
+
+    <dialog id="login-dialog">
+      <form id="login-form" method="dialog">
+        <h3>Teacher login</h3>
+        <label for="username">Username:</label>
+        <input id="username" name="username" required autocomplete="username" />
+        <label for="password">Password:</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password" />
+        <p id="login-error" class="error hidden"></p>
+        <div class="dialog-actions">
+          <button id="cancel-login" class="secondary-button" type="button">Cancel</button>
+          <button type="submit">Log in</button>
+        </div>
+      </form>
+    </dialog>
 
     <footer>
       <p>&copy; 2026 Mergington High School</p>
