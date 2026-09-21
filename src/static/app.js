@@ -3,6 +3,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const loginButton = document.getElementById("login-button");
+  const logoutButton = document.getElementById("logout-button");
+  const loginDialog = document.getElementById("login-dialog");
+  const loginForm = document.getElementById("login-form");
+  const loginError = document.getElementById("login-error");
+  const authStatus = document.getElementById("auth-status");
+  const tokenKey = "mergingtonTeacherToken";
+
+  function getAuthHeaders() {
+    const token = sessionStorage.getItem(tokenKey);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  function updateAuthState() {
+    const loggedIn = Boolean(sessionStorage.getItem(tokenKey));
+    loginButton.classList.toggle("hidden", loggedIn);
+    logoutButton.classList.toggle("hidden", !loggedIn);
+    signupForm.classList.toggle("hidden", !loggedIn);
+    authStatus.textContent = loggedIn
+      ? "You are logged in as a teacher."
+      : "Log in to register or unregister students.";
+  }
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -80,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         )}/unregister?email=${encodeURIComponent(email)}`,
         {
           method: "DELETE",
+          headers: getAuthHeaders(),
         }
       );
 
@@ -124,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         )}/signup?email=${encodeURIComponent(email)}`,
         {
           method: "POST",
+          headers: getAuthHeaders(),
         }
       );
 
@@ -155,6 +179,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  loginButton.addEventListener("click", () => {
+    loginError.classList.add("hidden");
+    loginForm.reset();
+    loginDialog.showModal();
+  });
+
+  document.getElementById("cancel-login").addEventListener("click", () => {
+    loginDialog.close();
+  });
+
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const response = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+      }),
+    });
+
+    if (!response.ok) {
+      loginError.textContent = "Invalid username or password.";
+      loginError.classList.remove("hidden");
+      return;
+    }
+
+    const result = await response.json();
+    sessionStorage.setItem(tokenKey, result.access_token);
+    loginDialog.close();
+    updateAuthState();
+  });
+
+  logoutButton.addEventListener("click", async () => {
+    await fetch("/auth/logout", { method: "POST", headers: getAuthHeaders() });
+    sessionStorage.removeItem(tokenKey);
+    updateAuthState();
+  });
+
   // Initialize app
+  updateAuthState();
   fetchActivities();
 });
